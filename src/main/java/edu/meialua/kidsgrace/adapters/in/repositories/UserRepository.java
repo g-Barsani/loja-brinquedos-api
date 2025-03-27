@@ -16,7 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
         List<User> findByName(String name);
         Optional<User> findAllByEmail(String email);
-        List<User> findAllByCategory(String category);
 
         // Método para buscar usuário por email e senha
         @Query ("SELECT u FROM User u WHERE u.email = :email AND u.password = :password")

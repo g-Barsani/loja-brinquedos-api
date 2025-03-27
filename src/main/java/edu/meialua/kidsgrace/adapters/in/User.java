@@ -6,17 +6,17 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Permite o auto increment do ID no banco
-    @Column(name="id")
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name", length = 250, nullable = false)
     private String name;
-    @Column(name = "email", length = 250, nullable = false, unique = true)
+    @Column(name = "email", length = 250, nullable = false)
     private String email;
     @Column(name = "password", length = 250, nullable = false)
     private String password;
-    @Column(name = "is_admin", length = 250, nullable = false, unique = true)
+    @Column(name = "is_admin", length = 250, nullable = false)
     private Boolean isAdmin;
 
     public User() {

@@ -1,5 +1,7 @@
 package edu.meialua.kidsgrace.adapters.out.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.meialua.kidsgrace.adapters.in.User;
 import edu.meialua.kidsgrace.adapters.in.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,23 +19,41 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
     @GetMapping("/findAll")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<String> getAllUsers() throws JsonProcessingException {
         List<User> users = userRepository.findAll();
-        return users.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(users);
+//        return users.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(users);
+
+        if(!users.isEmpty()) {
+            return ResponseEntity.ok(objectMapper.writeValueAsString(users));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("USUÁRIOS NÃO ENCONTRADOS");
     }
 
     @GetMapping("/findById/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
-        return userRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<String> getUserById(@PathVariable("id") Long id) throws JsonProcessingException{
+        Optional<User> user = userRepository.findById(id);
+
+        if (!user.isEmpty()){
+            return ResponseEntity.ok(objectMapper.writeValueAsString(user));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("USUÁRIO NÃO ENCONTRADO");
+
     }
 
     @GetMapping("/findByName/{name}")
-    public ResponseEntity<List<User>> getUserByName(@PathVariable("name") String name) {
+    public ResponseEntity<String> getUserByName(@PathVariable("name") String name) throws JsonProcessingException{
         List<User> users = userRepository.findByName(name);
-        return users.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(users);
+
+        if (!users.isEmpty()){
+            return ResponseEntity.ok(objectMapper.writeValueAsString(users));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("USUÁRIOS NÃO ENCONTRADOS");
     }
 
     @PostMapping("/insert")
@@ -65,7 +85,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("USUÁRIO NÃO ENCONTRADO");
     }
 
-    @PostMapping("/authenticate")
+    @GetMapping("/authenticate")
+//    @PostMapping("/authenticate"
     public ResponseEntity<String> authenticateUser(@RequestParam String email, @RequestParam String password) {
         Optional<User> user = userRepository.findByEmailAndPassword(email, password);
         return user.map(u -> ResponseEntity.ok("AUTENTICAÇÃO BEM-SUCEDIDA"))
