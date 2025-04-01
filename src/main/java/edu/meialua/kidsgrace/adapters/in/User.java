@@ -16,6 +16,9 @@ public class User {
 
     @Column(name = "name", length = 250, nullable = false)
     private String name;
+
+    @Column(name = "user_name", length = 250, nullable = false, unique = true)
+    private String userName;
     @Column(name = "email", length = 250, nullable = false)
     private String email;
     @Column(name = "password", length = 250, nullable = false)
@@ -28,9 +31,10 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String name, String email, String password, List<Role> roles) {
+    public User(Long id, String name, String userName, String email, String password, List<Role> roles) {
         this.id = id;
         this.name = name;
+        this.userName = userName;
         this.email = email;
         this.password = password;
         this.roles = roles;
@@ -50,6 +54,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getEmail() {
