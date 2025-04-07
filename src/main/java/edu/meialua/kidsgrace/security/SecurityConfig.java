@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,28 +24,57 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     private CustomUserDetailsService userDetailsService;
+    private JwtAuthEntryPoint authEntryPoint;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint authEntryPoint) {
         this.userDetailsService = userDetailsService;
+        this.authEntryPoint = authEntryPoint;
     }
+
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        .authentrypoint
+//                        .requestMatchers(HttpMethod.GET, "/toys/**").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
+//                        .requestMatchers("/swagger-ui/**").permitAll()
+//                        .anyRequest().permitAll() // Permite tudo
+//                )
+//
+//
+//
+////                .httpBasic(withDefaults());
+//                .formLogin(form -> form.disable()) // Desativa login por formulário
+//                .httpBasic(basic -> basic.disable()); // Desativa Basic Auth
+//
+//        return http.build();
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/toys/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll() // 🔥 Adicionado explicitamente
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .anyRequest().permitAll() // Permite tudo
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(authEntryPoint) // Set your custom entry point
                 )
-
-//                .httpBasic(withDefaults());
-                .formLogin(form -> form.disable()) // Desativa login por formulário
-                .httpBasic(basic -> basic.disable()); // Desativa Basic Auth
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/toys/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/users/").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable());
 
         return http.build();
     }
