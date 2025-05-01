@@ -6,7 +6,9 @@ import edu.meialua.kidsgrace.adapters.in.Role;
 import edu.meialua.kidsgrace.adapters.in.User;
 import edu.meialua.kidsgrace.adapters.in.repositories.RoleRepository;
 import edu.meialua.kidsgrace.adapters.in.repositories.UserRepository;
+import edu.meialua.kidsgrace.model.AuthResponseDTO;
 import edu.meialua.kidsgrace.model.RegisterDto;
+import edu.meialua.kidsgrace.security.JwtGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +31,18 @@ public class UserController {
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
+    private JwtGenerator jwtGenerator;
 
     @Autowired
     ObjectMapper objectMapper;
 
     @Autowired
-    public UserController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtGenerator jwtGenerator) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtGenerator = jwtGenerator;
     }
 
     @GetMapping("/findAll")
@@ -97,6 +101,28 @@ public class UserController {
         return new ResponseEntity<>("User registrado com sucesso", HttpStatus.OK);
     }
 
+    @PostMapping("/registerAdmin")
+    public ResponseEntity<String>createAdmin(@RequestBody RegisterDto registerDto) {
+
+        if (userRepository.existsByUserName(registerDto.getUsername())){
+            return new ResponseEntity<>("Username já existe!", HttpStatus.BAD_REQUEST);
+        }
+
+        User user = new User();
+        user.setUserName(registerDto.getUsername());
+        user.setName(registerDto.getName());
+        user.setEmail(registerDto.getEmail());
+        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+
+        Role roles = roleRepository.findByName("ADMIN").get();
+
+        user.setRoles(Collections.singletonList(roles));
+
+        userRepository.save(user);
+
+        return new ResponseEntity<>("Admin registrado com sucesso", HttpStatus.OK);
+    }
+
     @DeleteMapping("/deleteById/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable("id") Long id) {
         if (userRepository.existsById(id)) {
@@ -118,12 +144,13 @@ public class UserController {
 
 //    @GetMapping("/authenticate")
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<AuthResponseDTO> authenticateUser(@RequestParam String username, @RequestParam String password) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return new ResponseEntity<>("User logado com sucesso", HttpStatus.OK);
+        String token = jwtGenerator.generateToken(authentication);
+        return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
     }
 }
