@@ -7,6 +7,7 @@ import edu.meialua.kidsgrace.adapters.in.User;
 import edu.meialua.kidsgrace.adapters.in.repositories.RoleRepository;
 import edu.meialua.kidsgrace.adapters.in.repositories.UserRepository;
 import edu.meialua.kidsgrace.model.AuthResponseDTO;
+import edu.meialua.kidsgrace.model.LoginDto;
 import edu.meialua.kidsgrace.model.RegisterDto;
 import edu.meialua.kidsgrace.security.JwtGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +145,9 @@ public class UserController {
 
 //    @GetMapping("/authenticate")
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> authenticateUser(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<AuthResponseDTO> authenticateUser(@RequestBody LoginDto loginDto) {
+        String username = loginDto.getUsername();
+        String password = loginDto.getPassword();
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password));
 
