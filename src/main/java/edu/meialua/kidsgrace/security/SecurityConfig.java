@@ -73,6 +73,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/toys/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/imageProfileByUserId/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/findAll").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/findById").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/findByName").hasRole("ADMIN")

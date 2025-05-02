@@ -6,6 +6,8 @@ public class RegisterDto {
     private String name;
     private String email;
     private String password;
+    private String telephone;
+    private String address;
 
     private String role;
 
@@ -47,5 +49,21 @@ public class RegisterDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+     public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 }

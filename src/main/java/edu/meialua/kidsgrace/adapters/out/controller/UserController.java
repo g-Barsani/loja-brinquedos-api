@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @RestController
 @RequestMapping("/users")
@@ -38,7 +39,8 @@ public class UserController {
     ObjectMapper objectMapper;
 
     @Autowired
-    public UserController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtGenerator jwtGenerator) {
+    public UserController(AuthenticationManager authenticationManager, UserRepository userRepository,
+            RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtGenerator jwtGenerator) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -49,20 +51,31 @@ public class UserController {
     @GetMapping("/findAll")
     public ResponseEntity<String> getAllUsers() throws JsonProcessingException {
         List<User> users = userRepository.findAll();
-//        return users.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(users);
+        // return users.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+        // : ResponseEntity.ok(users);
 
-        if(!users.isEmpty()) {
+        if (!users.isEmpty()) {
             return ResponseEntity.ok(objectMapper.writeValueAsString(users));
         }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("USUÁRIOS NÃO ENCONTRADOS");
     }
 
+    @GetMapping("/imageProfileByUserId/{id}")
+    public ResponseEntity<String> getImageProfile(@PathVariable("id") Long id) throws JsonProcessingException {
+        int imageProfile = userRepository.imageProfileById(id);
+
+        if (imageProfile == 0)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("USUÁRIO NÃO ENCONTRADO");
+
+        return ResponseEntity.ok(objectMapper.writeValueAsString(Integer.toString(imageProfile)));
+    }
+
     @GetMapping("/findById/{id}")
-    public ResponseEntity<String> getUserById(@PathVariable("id") Long id) throws JsonProcessingException{
+    public ResponseEntity<String> getUserById(@PathVariable("id") Long id) throws JsonProcessingException {
         Optional<User> user = userRepository.findById(id);
 
-        if (!user.isEmpty()){
+        if (!user.isEmpty()) {
             return ResponseEntity.ok(objectMapper.writeValueAsString(user));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("USUÁRIO NÃO ENCONTRADO");
@@ -70,10 +83,10 @@ public class UserController {
     }
 
     @GetMapping("/findByName/{name}")
-    public ResponseEntity<String> getUserByName(@PathVariable("name") String name) throws JsonProcessingException{
+    public ResponseEntity<String> getUserByName(@PathVariable("name") String name) throws JsonProcessingException {
         List<User> users = userRepository.findByName(name);
 
-        if (!users.isEmpty()){
+        if (!users.isEmpty()) {
             return ResponseEntity.ok(objectMapper.writeValueAsString(users));
         }
 
@@ -81,9 +94,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String>createUser(@RequestBody RegisterDto registerDto) {
+    public ResponseEntity<String> createUser(@RequestBody RegisterDto registerDto) {
 
-        if (userRepository.existsByUserName(registerDto.getUsername())){
+        if (userRepository.existsByUserName(registerDto.getUsername())) {
             return new ResponseEntity<>("Username já existe!", HttpStatus.BAD_REQUEST);
         }
 
@@ -91,6 +104,9 @@ public class UserController {
         user.setUserName(registerDto.getUsername());
         user.setName(registerDto.getName());
         user.setEmail(registerDto.getEmail());
+        user.setTelephone(registerDto.getTelephone());
+        user.setAddress(registerDto.getAddress());
+        user.setImageProfile(randomGen());
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
 
         Role roles = roleRepository.findByName("USER").get();
@@ -102,10 +118,15 @@ public class UserController {
         return new ResponseEntity<>("User registrado com sucesso", HttpStatus.OK);
     }
 
-    @PostMapping("/registerAdmin")
-    public ResponseEntity<String>createAdmin(@RequestBody RegisterDto registerDto) {
+    private int randomGen() {
+        Random rand = new Random();
+        return rand.nextInt(16) + 1; // Gera um número entre 1 e 16
+    }
 
-        if (userRepository.existsByUserName(registerDto.getUsername())){
+    @PostMapping("/registerAdmin")
+    public ResponseEntity<String> createAdmin(@RequestBody RegisterDto registerDto) {
+
+        if (userRepository.existsByUserName(registerDto.getUsername())) {
             return new ResponseEntity<>("Username já existe!", HttpStatus.BAD_REQUEST);
         }
 
@@ -113,8 +134,10 @@ public class UserController {
         user.setUserName(registerDto.getUsername());
         user.setName(registerDto.getName());
         user.setEmail(registerDto.getEmail());
+        user.setTelephone(registerDto.getTelephone());
+        user.setAddress(registerDto.getAddress());
+        user.setImageProfile(randomGen());
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-
         Role roles = roleRepository.findByName("ADMIN").get();
 
         user.setRoles(Collections.singletonList(roles));
@@ -143,7 +166,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("USUÁRIO NÃO ENCONTRADO");
     }
 
-//    @GetMapping("/authenticate")
+    // @GetMapping("/authenticate")
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> authenticateUser(@RequestBody LoginDto loginDto) {
         String username = loginDto.getUsername();

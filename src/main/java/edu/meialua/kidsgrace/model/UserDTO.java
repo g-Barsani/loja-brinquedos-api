@@ -5,11 +5,13 @@ public class UserDTO {
     private String name;
     private String email;
     private String password;
+    private String telephone;
+    private String address;
+    private int imageProfile;
     private Boolean isAdmin;
 
     public UserDTO() {
     }
-
 
     public Long getId() {
         return id;
@@ -41,5 +43,29 @@ public class UserDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getImageProfile() {
+        return imageProfile;
+    }
+
+    public void setImageProfile(int imageProfile) {
+        this.imageProfile = imageProfile;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 }

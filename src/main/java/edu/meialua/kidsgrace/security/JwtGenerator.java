@@ -43,6 +43,8 @@ public class JwtGenerator {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", domainUser.getId());
         claims.put("email", domainUser.getEmail());
+        claims.put("telephone", domainUser.getTelephone());
+        claims.put("address", domainUser.getAddress());
         claims.put("roles", authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)

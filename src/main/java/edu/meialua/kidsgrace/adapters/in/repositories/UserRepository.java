@@ -19,6 +19,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
         Boolean existsByUserName(String userName);
         Optional<User> findAllByEmail(String email);
 
+        @Query ("SELECT u.imageProfile FROM User u WHERE u.id = :id")
+        int imageProfileById(Long id);
+
         // Método para buscar usuário por email e senha
         @Query ("SELECT u FROM User u WHERE u.email = :email AND u.password = :password")
         Optional<User> findByEmailAndPassword(String email, String password);
