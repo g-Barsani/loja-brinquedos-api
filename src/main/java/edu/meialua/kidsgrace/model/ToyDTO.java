@@ -1,19 +1,19 @@
 package edu.meialua.kidsgrace.model;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class ToyDTO {
-    private Long id;
     private String name;
     private String category;
     private String description;
     private String brand;
-    private Byte[] image;
+    private MultipartFile image;
     private float value;
 
     public ToyDTO() {
     }
 
-    public ToyDTO(Long id, String name, String category, String description, String brand, Byte[] image, float value) {
-        this.id = id;
+    public ToyDTO( String name, String category, String description, String brand, MultipartFile  image, float value) {
         this.name = name;
         this.category = category;
         this.description = description;
@@ -23,13 +23,6 @@ public class ToyDTO {
     }
 
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
@@ -63,11 +56,11 @@ public class ToyDTO {
         this.brand = brand;
     }
 
-    public Byte[] getImage() {
+    public MultipartFile  getImage() {
         return image;
     }
 
-    public void setImage(Byte[] image) {
+    public void setImage(MultipartFile image) {
         this.image = image;
     }
 

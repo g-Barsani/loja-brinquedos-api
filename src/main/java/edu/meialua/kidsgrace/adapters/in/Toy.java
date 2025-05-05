@@ -20,7 +20,7 @@ public class Toy {
     private String description;
     @Column(name = "brand", length = 100)
     private String brand;
-    @Column(name = "image", nullable = true)
+    @Column(name = "image",columnDefinition = "LONGBLOB", nullable = true)
     private byte[] image;
     @Column(name = "value", nullable = false)
     private float value;
@@ -37,6 +37,8 @@ public class Toy {
                 ", value=" + value +
                 '}';
     }
+
+    public Toy(){}
 
     public Long getId() {
         return id;

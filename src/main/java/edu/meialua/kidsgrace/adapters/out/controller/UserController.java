@@ -21,7 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -94,10 +96,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> createUser(@RequestBody RegisterDto registerDto) {
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody RegisterDto registerDto) {
+        Map<String, String> response = new HashMap<>();
 
         if (userRepository.existsByUserName(registerDto.getUsername())) {
-            return new ResponseEntity<>("Username já existe!", HttpStatus.BAD_REQUEST);
+            response.put("message", "Username já existe!");
+            return ResponseEntity.badRequest().body(response);
         }
 
         User user = new User();
@@ -115,7 +119,9 @@ public class UserController {
 
         userRepository.save(user);
 
-        return new ResponseEntity<>("User registrado com sucesso", HttpStatus.OK);
+        response.put("message", "Usuário registrado com sucesso");
+
+        return ResponseEntity.ok(response);
     }
 
     private int randomGen() {
@@ -161,6 +167,18 @@ public class UserController {
     public ResponseEntity<String> updateUser(@RequestBody User user) {
         if (userRepository.existsById(user.getId())) {
             userRepository.save(user);
+            return ResponseEntity.ok("USUÁRIO ATUALIZADO COM SUCESSO");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("USUÁRIO NÃO ENCONTRADO");
+    }
+
+    @PutMapping("/updateImageProfileById/{id}")
+    public ResponseEntity<String> updateUserById(@PathVariable Long id, @RequestBody int imageProfile) {
+        Optional<User> updateUser =  userRepository.findById(id);
+
+        if (updateUser.isPresent()) {
+            updateUser.get().setImageProfile(imageProfile);
+            userRepository.save(updateUser.get());
             return ResponseEntity.ok("USUÁRIO ATUALIZADO COM SUCESSO");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("USUÁRIO NÃO ENCONTRADO");

@@ -4,14 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.meialua.kidsgrace.adapters.in.Toy;
 import edu.meialua.kidsgrace.adapters.in.repositories.ToyRepository;
+import edu.meialua.kidsgrace.model.ToyDTO;
+import org.springframework.http.MediaType;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -26,13 +31,17 @@ public class ToyController {
     // http://localhost:8080/toys/findAll
     @GetMapping("/findAll")
     public ResponseEntity<String> getToys() throws JsonProcessingException {
-        List<Toy> toys = toyRepository.findAll();
 
-        if(!toys.isEmpty()) {
+        try {
+            List<Toy> toys = toyRepository.findAll();
+
             return ResponseEntity.ok(objectMapper.writeValueAsString(toys));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("BRINQUEDOS NÃO ENCONTRADOS");
         }
+        
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("BRINQUEDOS NÃO ENCONTRADOS");
+        
     }
 
     // http://localhost:8080/toys/findByName
@@ -73,51 +82,80 @@ public class ToyController {
 
 
     // http://localhost:8080/toys/insert
-    @PostMapping("/insert")
-    public ResponseEntity<String> createToy(@RequestBody Toy toy) {
-        // Verificar se o Toy existe
-//        Optional<Toy> toyOpt = toyRepository.findById(toy.getId());
-//        if (toyOpt.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("BRINQUEDO JÁ CADASTRADO!");
-//        }
-
+    @PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> createToy(@ModelAttribute ToyDTO toy) throws IOException{
+        Map<String, String> response = new HashMap<>();
+        Toy addToy = new Toy();
+        addToy.setName(toy.getName());
+        addToy.setDescription(toy.getDescription());
+        addToy.setBrand(toy.getBrand());
+        addToy.setValue(toy.getValue());
+        addToy.setCategory(toy.getCategory());
+        addToy.setImage(toy.getImage().getBytes());
+        
         try{
-            toyRepository.save(toy);
-            return ResponseEntity.status(HttpStatus.OK).body("BRINQUEDO CADASTRADO COM SUCESSO");
+            toyRepository.save(addToy);
+            response.put("message", "BRINQUEDO CADASTRADO COM SUCESSO");
+
+            return ResponseEntity.ok().body(response);
         }
         catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERRO AO CADASTRAR BRINQUEDO! " + e.getMessage());
+            response.put("message", "ERRO AO CADASTRAR BRINQUEDO! " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
-
-
-
     }
 
 
     // http://localhost:8080/toys/deleteById/{id}
     @DeleteMapping("/deleteById/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable("id") Long id) {
+    public ResponseEntity<Map<String, String>> deleteById(@PathVariable("id") Long id) {
+        Map<String, String> response = new HashMap<>();
         // Verifica se existe um toy com o ID fornecido
         Optional<Toy> existingToy = toyRepository.findById(id);
         if (existingToy.isPresent()) {
             toyRepository.deleteById(id);
-            return ResponseEntity.ok("BRINQUEDO DELETADO COM SUCESSO PELO ID.");
+            response.put("message", "BRINQUEDO DELETADO COM SUCESSO PELO ID.");
+            return ResponseEntity.ok().body(response);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NENHUM BRINQUEDO ENCONTRADO COM ESSE ID.");
+            response.put("message", "NENHUM BRINQUEDO ENCONTRADO COM ESSE ID.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 
     // http://localhost:8080/toys/update
-    @PutMapping("/update")
-    public ResponseEntity<String> updateToy(@RequestBody Toy toy) {
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> updateToy(@PathVariable("id") Long id , @ModelAttribute ToyDTO toy) {
+        Map<String, String> response = new HashMap<>();
+
+
         // Verificar se o Toy existe
-        Optional<Toy> toyOpt = toyRepository.findById(toy.getId());
-        if (toyOpt.isPresent()) {
-            toyRepository.save(toy);
-            return ResponseEntity.status(HttpStatus.CREATED).body("BRINQUEDO ATUALIZADO COM SUCESSO.");
+        Optional<Toy> optionalToy = toyRepository.findById(id);
+        if (optionalToy.isEmpty()) {
+            response.put("message", "BRINQUEDO COM ESSES DADOS NÃO ENCONTRADO");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        try {
+            Toy updToy = optionalToy.get();
+            updToy.setName(toy.getName());
+            updToy.setDescription(toy.getDescription());
+            updToy.setBrand(toy.getBrand());
+            updToy.setValue(toy.getValue());
+            updToy.setCategory(toy.getCategory());
+
+            if (toy.getImage() != null && !toy.getImage().isEmpty()) {
+                updToy.setImage(toy.getImage().getBytes());
+            }
+    
+            toyRepository.save(updToy);
+            response.put("message", "BRINQUEDO ATUALIZADO COM SUCESSO");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("message", "Error processing image");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("BRINQUEDO COM ESSES DADOS NÃO ENCONTRADO");
     }
 
 

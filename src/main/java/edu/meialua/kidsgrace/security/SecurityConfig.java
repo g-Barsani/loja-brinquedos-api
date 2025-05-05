@@ -78,7 +78,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/users/findById").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/findByName").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/toys/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/toys/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/toys/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/users/updateImageProfileById/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
