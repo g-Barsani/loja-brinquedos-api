@@ -6,7 +6,7 @@ import edu.meialua.kidsgrace.adapters.in.Toy;
 import edu.meialua.kidsgrace.adapters.in.repositories.ToyRepository;
 import edu.meialua.kidsgrace.model.ToyDTO;
 import org.springframework.http.MediaType;
-
+import edu.meialua.kidsgrace.model.VisibilityUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping ("/toys")
 public class ToyController {
@@ -157,6 +158,29 @@ public class ToyController {
         }
 
     }
+    @PatchMapping("/updateVisibility/{id}")
+    public ResponseEntity<Map<String, String>> updateVisibility(
+            @PathVariable("id") Long id,
+            @RequestBody VisibilityUpdateDTO visibilityUpdateDTO) {
 
+        Map<String, String> response = new HashMap<>();
 
+        Optional<Toy> toyOptional = toyRepository.findById(id);
+        if (toyOptional.isEmpty()) {
+            response.put("message", "Brinquedo não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Toy toy = toyOptional.get();
+        toy.setVisibleInCatalog(visibilityUpdateDTO.isVisibleInCatalog());
+
+        try {
+            toyRepository.save(toy);
+            response.put("message", "Visibilidade do brinquedo atualizada com sucesso");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("message", "Erro ao atualizar visibilidade: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

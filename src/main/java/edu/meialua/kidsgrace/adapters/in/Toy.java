@@ -24,6 +24,8 @@ public class Toy {
     private byte[] image;
     @Column(name = "value", nullable = false)
     private float value;
+    @Column(name = "visible_in_catalog", nullable = false)
+    private boolean visibleInCatalog = false;
 
     @Override
     public String toString() {
@@ -95,4 +97,8 @@ public class Toy {
     public void setValue(float value) {
         this.value = value;
     }
+    public boolean isVisibleInCatalog() {return this.visibleInCatalog;}
+
+    public void setVisibleInCatalog(boolean visibleInCatalog) {this.visibleInCatalog = visibleInCatalog;}
+
 }

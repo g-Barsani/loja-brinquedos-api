@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/users/findAll").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/findById").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/findByName").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/toys/updateVisibility/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/toys/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/toys/**").hasRole("ADMIN")
@@ -107,7 +108,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:4200")); // ✅ ou "*" se não estiver usando cookies
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // ✅ só use se realmente precisa enviar cookies
 
